@@ -88,8 +88,7 @@ GazeCollector.prototype.update = function (filepath) {
   var self = this
   self.get(filepath, function (err, node) {
     if (err) return self.emit('error', err)
-
-    self.data.push(obj)
+    self.data.push(node)
     self.emit('data', self.data)
   })
 }
