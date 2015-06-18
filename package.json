@@ -20,8 +20,11 @@
   },
   "homepage": "https://github.com/karissa/gaze-collect",
   "dependencies": {
+    "collect-stream": "^1.0.0",
     "debug": "^2.2.0",
+    "from2": "^2.0.3",
     "gaze": "^0.5.1",
-    "inherits": "^2.0.1"
+    "inherits": "^2.0.1",
+    "through2": "^2.0.0"
   }
 }

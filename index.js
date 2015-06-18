@@ -1,5 +1,8 @@
 var fs = require('fs')
 var Gaze = require('gaze').Gaze
+var through = require('through2')
+var from = require('from2')
+var collect = require('collect-stream')
 var inherits = require('inherits')
 var events = require('events')
 var debug = require('debug')('gaze-collect')
@@ -16,7 +19,6 @@ function GazeCollector (dirs, opts) {
 
   events.EventEmitter.call(self)
 
-  self.data = []
   self.gaze = new Gaze(null, opts)
   self.valid = opts.valid || function (path) { return true }
   self.read = opts.read || true
@@ -26,7 +28,10 @@ function GazeCollector (dirs, opts) {
     debug('added', dirs[i])
   }
 
-  var valid = self.valid
+  self.initial(dirs, function (err, nodes) {
+    self.data = nodes
+    self.emit('data', self.data)
+  })
 
   self.gaze.on('deleted', function (filepath) {
     self.deleted(filepath)
@@ -39,6 +44,31 @@ function GazeCollector (dirs, opts) {
   self.gaze.on('added', function (filepath) {
     self.update(filepath)
   })
+}
+
+GazeCollector.prototype.initial = function (dirs, cb) {
+  var self = this
+
+  var nodes = []
+  var stream = from.obj(dirs).pipe(through.obj(function (dir, enc, next) {
+    dir = path.dirname(dir)
+    if (!fs.existsSync(dir)) return next()
+
+    var contents = fs.readdirSync(dir)
+
+    for (var i in contents) {
+      var filepath = path.join(dir, contents[i])
+
+      if (fs.statSync(filepath).isFile() && self.valid(filepath)) {
+        self.get(filepath, function (err, node) {
+          if (err) return next(err)
+          next(null, node)
+        })
+      }
+    }
+  }))
+
+  collect(stream, cb)
 }
 
 GazeCollector.prototype.deleted = function (filepath) {
@@ -55,23 +85,32 @@ GazeCollector.prototype.deleted = function (filepath) {
 
 GazeCollector.prototype.update = function (filepath) {
   var self = this
-  debug('update', filepath)
+  self.get(filepath, function (err, node) {
+    if (err) return self.emit('error', err)
+
+    self.data.push(obj)
+    self.emit('data', self.data)
+  })
+}
+
+GazeCollector.prototype.get = function (filepath, cb) {
+  var self = this
+  debug('get', filepath)
   if (self.valid(filepath)) {
     var obj = { filepath: filepath }
     if (!self.read) {
-      self.data.push(obj)
-      self.emit('data', self.data)
+      cb(null, obj)
     }
     else {
       fs.readFile(filepath, function (err, contents) {
-        if (err) self.emit('error', err)
+        if (err) cb(err)
+        obj.data = contents.toString()
         try {
-          obj.data = contents.toString()
-          self.data.push(obj)
-          self.emit('data', self.data)
+          if (self.parse) obj.data = JSON.parse(obj.data)
         } catch (err) {
-          self.emit('error', err)
+          self.emit('err', new Error('Couldnt parse into JSON: ', obj.file))
         }
+        cb(null, obj)
       })
     }
   }
