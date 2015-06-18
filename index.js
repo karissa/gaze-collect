@@ -44,7 +44,7 @@ function GazeCollector (dirs, opts) {
 
 GazeCollector.prototype.deleted = function (filepath) {
   var self = this
-  console.log(self.data, filepath)
+  debug('deleted', filepath)
 
   for (var i in self.data) {
     if (self.data.filepath === filepath) {
@@ -53,9 +53,10 @@ GazeCollector.prototype.deleted = function (filepath) {
     }
   }
 }
+
 GazeCollector.prototype.update = function (filepath) {
   var self = this
-  console.log('update', filepath)
+  debug('update', filepath)
   if (self.valid(filepath)) {
     var thing = {filepath: filepath}
     if (!self.read) {
