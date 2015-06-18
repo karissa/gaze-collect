@@ -22,6 +22,7 @@ function GazeCollector (dirs, opts) {
   self.gaze = new Gaze(null, opts)
   self.valid = opts.valid || function (path) { return true }
   self.read = opts.read || true
+  self.parse = opts.parse || true
 
   for (var i in dirs) {
     self.gaze.add(dirs[i])

@@ -36,6 +36,7 @@ Returns a watcher
 - also includes:
   `read`: boolean. whether or not to read contents into the return object
   `valid`: function (filepath). returns true if filepath should be included. defauls to true
+  `parse`: boolean. whether or not to parse file into json
 
 ### watcher.close()
 
