@@ -18,5 +18,10 @@
   "bugs": {
     "url": "https://github.com/karissa/gaze-collect/issues"
   },
-  "homepage": "https://github.com/karissa/gaze-collect"
+  "homepage": "https://github.com/karissa/gaze-collect",
+  "dependencies": {
+    "debug": "^2.2.0",
+    "gaze": "^0.5.1",
+    "inherits": "^2.0.1"
+  }
 }
