@@ -27,7 +27,6 @@ function GazeCollector (dirs, opts) {
   }
 
   var valid = self.valid
-  var data = self.data
 
   self.gaze.on('deleted', function (filepath) {
     self.deleted(filepath)
@@ -58,17 +57,17 @@ GazeCollector.prototype.update = function (filepath) {
   var self = this
   debug('update', filepath)
   if (self.valid(filepath)) {
-    var thing = {filepath: filepath}
+    var obj = { filepath: filepath }
     if (!self.read) {
-      self.data.push(thing)
-      return self.emit('data', self.data)
+      self.data.push(obj)
+      self.emit('data', self.data)
     }
     else {
       fs.readFile(filepath, function (err, contents) {
         if (err) self.emit('error', err)
         try {
-          thing.data = JSON.parse(contents.toString())
-          self.data.push(thing)
+          obj.data = contents.toString()
+          self.data.push(obj)
           self.emit('data', self.data)
         } catch (err) {
           self.emit('error', err)
